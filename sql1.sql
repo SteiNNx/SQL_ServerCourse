@@ -59,7 +59,7 @@ GO
 
 
 -- Insertamos la informacion de las paginas de indices clustered en la tabla temporal para su mejor analisis
-Insert Into sp_table_pages EXEC('DBCC IND(uniqueclusteredindexstructure,customers,1)')
+Insert Into sp_table_pages EXEC('DBCC IND(clusteredindex,customers,1)')
 GO
 
 
@@ -94,16 +94,16 @@ Go
 dbcc traceon (3604)
 
 -- 1 Volcamos la informacion de la pagina root del indice 
-dbcc PAGE (uniqueclusteredindexstructure,1,991,3)  -- El pagePid de la consulta anterior que es el root 
+dbcc PAGE (clusteredindex,1,991,3)  -- El pagePid de la consulta anterior que es el root 
 
 
 
 -- 2 Volcamos la informacion de la pagina de nivel intemedio del indice 
 -- como queremos encontrar el valor 33333 buscamos en la columna customerid key en que rango esta ese valor
 -- y escogemos la pagina de la columna ChildPageId para seguir navegando al siguiente nivel 
-dbcc PAGE (uniqueclusteredindexstructure,1,2342,3)
+dbcc PAGE (clusteredindex,1,2342,3)
 
 
 -- 3 Volcamos la informacion de la pagina datos  del indice  a nivel de leaf level 
 -- mismo proceso anterior 
-dbcc PAGE (uniqueclusteredindexstructure,1,2040,1)
+dbcc PAGE (clusteredindex,1,2040,1)
