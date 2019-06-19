@@ -72,30 +72,66 @@ SELECT
 		OVER (ORDER BY monthno) AS nextval
 FROM SalesMonth2007;
 
+--
+
+WITH SalesMonth2007 AS
+(
+	SELECT
+		MONTH(orderdate) AS monthno,
+		SUM(val) AS val
+	FROM Sales.OrderValues
+	WHERE orderdate >= '20070101' AND orderdate < '20080101'
+	GROUP BY MONTH(orderdate)
+)
+SELECT
+	monthno,
+	val,
+	AVG(val) OVER (ORDER BY monthno ROWS BETWEEN 3 PRECEDING AND CURRENT ROW) AS avglast3months,
+	SUM(val) OVER (ORDER BY monthno ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS ytdval
+FROM SalesMonth2007;
 
 -- listar las diferencias deventas de kane jhon por mes entre el año 2006 y 2007
 -- custid=20
-
-WITH SalesTest AS
+WITH test AS
 (
-	/*select ord.*,cu.contactname from Sales.OrderValues ord 
-	inner join Sales.Customers cu 
-		on(ord.custid=cu.custid) 
-		where ord.custid=20
-			and orderdate >= '20060101' AND orderdate < '20070101'*/
-	select 
-		MONTH(orderdate) AS mes,
-		YEAR(orderdate) AS anno,
-		SUM(VAL) as val
+	SELECT
+		MONTH(orderdate) AS monthno,
+		SUM(val) AS val
 	from Sales.OrderValues ord 
 	inner join Sales.Customers cu 
 		on(ord.custid=cu.custid) 
 		where ord.custid=20
 			and orderdate >= '20060101' AND orderdate < '20070101'
-		GROUP BY MONTH(orderdate),YEAR(orderdate)
-
+	GROUP BY MONTH(orderdate)
 )
-select
- mes,
- val
- from SalesTest;
+SELECT
+	monthno,
+	val,
+	AVG(val) OVER (ORDER BY monthno ROWS BETWEEN 3 PRECEDING AND CURRENT ROW) AS avglast3months,
+	SUM(val) OVER (ORDER BY monthno ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS ytdval
+FROM test;
+
+WITH test2 AS
+(
+SELECT  
+		MONTH(orderdate) AS mes,
+		YEAR(orderdate) AS anno,
+		SUM(VAL) as val
+	 from [TSQL].[Sales].[OrderValues] where custid=20
+	 and orderdate >= '20060101' AND orderdate < '20080101'
+	 GROUP BY MONTH(orderdate),YEAR(orderdate)
+) 
+SELECT
+	mes,
+	val,
+	OVER (PARTITION BY anno )
+)
+SELECT * , 
+	SUM(val)
+	OVER (PARTITION BY YEAR(orderdate) 
+				   ORDER BY orderdate, orderid 
+				   ROWS BETWEEN UNBOUNDED PRECEDING
+                         AND CURRENT ROW) AS runval
+	 from [TSQL].[Sales].[OrderValues] 
+		where custid=20
+		 and orderdate >= '20060101' AND orderdate < '20080101';
